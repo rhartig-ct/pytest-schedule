@@ -87,8 +87,9 @@ def pytest_collection_modifyitems(
         items.sort(key=lambda item: execution_times.get(item.nodeid, 0), reverse=True)
 
     remove_keys = []
+    nodeids = [item.nodeid for item in items]
     for test in execution_times.keys():
-        if test not in items:
+        if test not in nodeids:
             remove_keys.append(test)
     for key in remove_keys:
         execution_times.pop(key)
