@@ -68,20 +68,14 @@ def pytest_collection_modifyitems(
     config: pytest.Config, items: list[pytest.Item]
 ) -> None:
     execution_times = {}
-    xdist_worker_number = os.environ.get("PYTEST_XDIST_WORKER", None)
     config.option.dist = "loadgroup"
-    if xdist_worker_number:
-        for item in items:
-            cache_key = "execution_times/{}".format(
-                re.sub(r"[^\w_. -]", "_", item.nodeid.split("@")[0])
-            )
-            test_times = config.cache.get(cache_key, [0])
-            avg_time = mean(test_times[-config.option.exec_average :])
-            execution_times[item.nodeid] = avg_time + config.option.test_overhead
-    else:
-        execution_times = config.cache.get("execution_times", {})
-        for key, value in execution_times.items():
-            execution_times[key] = value + config.option.test_overhead
+    for item in items:
+        cache_key = "execution_times/{}".format(
+            re.sub(r"[^\w_. -]", "_", item.nodeid.split("@")[0])
+        )
+        test_times = config.cache.get(cache_key, [0])
+        avg_time = mean(test_times[-config.option.exec_average :])
+        execution_times[item.nodeid] = avg_time + config.option.test_overhead
 
     if config.option.sort_tests:
         items.sort(key=lambda item: execution_times.get(item.nodeid, 0), reverse=True)
@@ -116,22 +110,19 @@ def pytest_collection_modifyitems(
 @pytest.hookimpl
 def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo) -> None:
     """Save aggregated duration of the item calls to the cache."""
+
     # Aggregate setup and call phases
     item.stash[_execution_time_key] += call.duration
+
     # Only write to cache at the end, not for each step (collect, setup, call, teardown)
     if call.when != "teardown":
         return
-    xdist_worker_number = os.environ.get("PYTEST_XDIST_WORKER", None)
-    if xdist_worker_number:
-        # regex makes the generated path safe for windows
-        # xdist adds '@{marker_name}' to track files with --dist loadgroup which will be a different name from what is read in the modifyitems hook
-        cache_key = "execution_times/{}".format(
-            re.sub(r"[^\w_. -]", "_", item.nodeid.split("@")[0])
-        )
-        execution_times = item.config.cache.get(cache_key, [])
-        execution_times.append(item.stash[_execution_time_key])
-        item.config.cache.set(cache_key, execution_times)
-    else:
-        execution_times = item.config.cache.get("execution_times", {})
-        execution_times[item.nodeid] = item.stash[_execution_time_key]
-        item.config.cache.set("execution_times", execution_times)
+
+    # regex makes the generated path safe for windows
+    # xdist adds '@{marker_name}' to track files with --dist loadgroup which will be a different name from what is read in the modifyitems hook
+    cache_key = "execution_times/{}".format(
+        re.sub(r"[^\w_. -]", "_", item.nodeid.split("@")[0])
+    )
+    execution_times = item.config.cache.get(cache_key, [])
+    execution_times.append(item.stash[_execution_time_key])
+    item.config.cache.set(cache_key, execution_times)

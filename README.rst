@@ -1,71 +1,79 @@
 ====================
-pytest-slowest-first
+pytest-schedule
 ====================
 
-.. image:: https://img.shields.io/pypi/v/pytest-slowest-first.svg
-    :target: https://pypi.org/project/pytest-slowest-first
-    :alt: PyPI version
+Record test runtime and use this info to create a schedule to optimize runtime/core utilization.
 
-.. image:: https://img.shields.io/pypi/pyversions/pytest-slowest-first.svg
-    :target: https://pypi.org/project/pytest-slowest-first
-    :alt: Python versions
-
-.. image:: https://ci.appveyor.com/api/projects/status/github/klimkin/pytest-slowest-first?branch=master
-    :target: https://ci.appveyor.com/project/klimkin/pytest-slowest-first/branch/master
-    :alt: See Build Status on AppVeyor
-
-Sort tests by their last duration, slowest first.
-
-----
-
-This `pytest`_ plugin was generated with `Cookiecutter`_ along with `@hackebrot`_'s
-`cookiecutter-pytest-plugin`_ template.
+Improve total runtime of test suites where are few long tests are slowing things down.  If you've got a test suite that could theoretically be completed on n cores in ten minutes,
+but have a 10 minute test in the suite, if that test starts at the 5 minute market the whole suite will take 5 extra minutes waiting for it.
 
 
 Features
 --------
 
-* Sort tests on consecutive runs by their last duration, slowest first.
-* Works with `pytest-xdist`_ by pre-assigning tests to workers based on their
-  last duration.
+* Sort tests on consecutive runs by their last duration.
+* Average execution time over x runs
+* Fine tune scheduling with bias against larger groups of tests
+* Works with `pytest-xdist`_ by pre-assigning tests to workers based on created schedule.
+* Extensible scheduler system
+* Round Robin, Snake, and Shortest Group schedulers
 
 
 Requirements
 ------------
 
 * pytest
-* pytest-xdist (optional)
+* pytest-xdist
 
 
 Installation
 ------------
 
-You can install "pytest-slowest-first" via `pip`_ from `PyPI`_::
+You can install "pytest-schedule" via `pip`_::
 
-    $ pip install pytest-slowest-first
+    $ pip install git+https://github.com/rhartig-ct/pytest-schedule@initial-release
 
 
 Usage
 -----
 
-For best results, use this plugin with `pytest-xdist`_ to run tests in parallel.
+Requires the use of `pytest-xdist`_ to run tests in parallel (otherwise the schedule doesn't do much good).
 When used together, make sure to pass ``--dist=loadgroup`` to `pytest`_ to
 ensure that tests are distributed evenly across workers.
 
+Use --schedule to choose which scheduler is used. Current schedulers are "shortest group": assign next (sorted) test to the worker with the shortest schedule,
+"round robin": assign next (sorted) test to workers in a round robin pattern, "snake": assign next (sorted) test to the worker in a snake pattern (go through all workers front to back then back to front, repeat).
+
+RoundRobin and Snake are included more as basic examples and shouldn't be used.  RoundRobin produces a weighted schedule that where early workers are expected to take longer than later workers, Snake should always out preform it.
+
+These schedulers will not work well with all test sets, and can even potentially slow down total execution time in certain circumstances.
+
+Execution time recording assumes tests are run on similar hardware, on distributed setups with different hardware execution time and therefore scheduling can be off.
+
+Shortest Group scheduler performs well on test sets with a few tests that are much longer than the rest.
+
+Schedulers will not work on any test configuration that does not use --dist loadgroup (from xdist), since this is how it enforces its schedule.
+
 Example command line::
 
-    $ pytest --sf -n auto --dist=loadgroup
+    $ pytest --schedule "shortest group" -n auto --dist=loadgroup
+
+    $ pytest --schedule "shortest group" --avg 5 -n auto --dist=loadgroup
+
+    $ pytest --schedule "shortest group" --overhead .1 -n auto --dist=loadgroup
+
+    $ pytest --schedule "shortest group" --no-sort-tests -n auto --dist=loadgroup
 
 
 Contributing
 ------------
-Contributions are very welcome. Tests can be run with `tox`_, please ensure
+Contributions are very welcome. Tests can be run with `pytest`_, please ensure
 the coverage at least stays the same before you submit a pull request.
 
 License
 -------
 
-Distributed under the terms of the `MIT`_ license, "pytest-slowest-first" is free and open source software
+Distributed under the terms of the `MIT`_ license, "pytest-schedule" is free and open source software
 
 
 Issues
@@ -73,16 +81,9 @@ Issues
 
 If you encounter any problems, please `file an issue`_ along with a detailed description.
 
-.. _`Cookiecutter`: https://github.com/audreyr/cookiecutter
-.. _`@hackebrot`: https://github.com/hackebrot
 .. _`MIT`: http://opensource.org/licenses/MIT
-.. _`BSD-3`: http://opensource.org/licenses/BSD-3-Clause
-.. _`GNU GPL v3.0`: http://www.gnu.org/licenses/gpl-3.0.txt
-.. _`Apache Software License 2.0`: http://www.apache.org/licenses/LICENSE-2.0
-.. _`cookiecutter-pytest-plugin`: https://github.com/pytest-dev/cookiecutter-pytest-plugin
 .. _`file an issue`: https://github.com/klimkin/pytest-slowest-first/issues
 .. _`pytest`: https://github.com/pytest-dev/pytest
-.. _`tox`: https://tox.readthedocs.io/en/latest/
 .. _`pip`: https://pypi.org/project/pip/
 .. _`PyPI`: https://pypi.org/project
 .. _`pytest-xdist`: https://github.com/pytest-dev/pytest-xdist
