@@ -1,6 +1,9 @@
 from typing import List
 
+from pytest_schedule.schedulers.round_robin import RoundRobinScheduler
 from pytest_schedule.schedulers.scheduler import Scheduler
+from pytest_schedule.schedulers.shortest_group import ShortestGroupScheduler
+from pytest_schedule.schedulers.snake import SnakeScheduler
 from pytest_schedule.schedulers.types import ScheduleType
 
 
@@ -18,4 +21,4 @@ def get_scheduler(schedule_type: ScheduleType) -> type[Scheduler]:
 
 
 def get_all_schedulers() -> List[type[Scheduler]]:
-    return Scheduler.__subclasses__()
+    return [ShortestGroupScheduler, SnakeScheduler, RoundRobinScheduler]
