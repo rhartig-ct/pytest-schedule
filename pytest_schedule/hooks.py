@@ -86,6 +86,13 @@ def pytest_collection_modifyitems(
     if config.option.sort_tests:
         items.sort(key=lambda item: execution_times.get(item.nodeid, 0), reverse=True)
 
+    remove_keys = []
+    for test in execution_times.keys():
+        if test not in items:
+            remove_keys.append(test)
+    for key in remove_keys:
+        execution_times.pop(key)
+
     config.option.schedule = ScheduleType(config.option.schedule)
     if config.option.schedule != ScheduleType.Default:
         xdist_workers = int(os.environ.get("PYTEST_XDIST_WORKER_COUNT", 0))
