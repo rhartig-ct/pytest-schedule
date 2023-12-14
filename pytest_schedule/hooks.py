@@ -90,7 +90,7 @@ def pytest_collection_modifyitems(
                 for data in schedule:
                     config.cache.set(f"splits/{data.id}", data.to_dict())
             if config.option.dist == "loadgroup":
-                assign_xdist_workers(items, xdist_workers, schedule, config)
+                assign_xdist_workers(items, schedule)
 
     for item in items:
         item.stash[_execution_time_key] = 0
