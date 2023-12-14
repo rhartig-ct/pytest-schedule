@@ -42,7 +42,7 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         dest="cache_schedule",
         action="store_true",
         default=False,
-        help="Write planned schedule to cache.  This does not reuse the schedule and is intended for debugging/optimization.",
+        help="Write planned schedule to cache. This does not reuse the schedule and is intended for debugging/optimization.",
     )
     group.addoption(
         "--oh",
@@ -51,7 +51,14 @@ def pytest_addoption(parser: pytest.Parser) -> None:
         action="store",
         default=0,
         type=float,
-        help="Overhead penelty for tests.  Increasing this value penalizes test groups with more tests.",
+        help="Overhead penelty for tests. Increasing this value penalizes test groups with more tests.",
+    )
+    group.addoption(
+        "--no-sort-tests",
+        dest="sort_tests",
+        action="store_false",
+        default=True,
+        help="Prevent the sorting of tests. Some schedulers may ignore this option. For those that don't the tests will not be run in longest to shortest order. This helps the completion percentage track the real completion time.",
     )
 
 
@@ -75,7 +82,9 @@ def pytest_collection_modifyitems(
         execution_times = config.cache.get("execution_times", {})
         for key, value in execution_times.items():
             execution_times[key] = value + config.option.test_overhead
-    items.sort(key=lambda item: execution_times.get(item.nodeid, 0), reverse=True)
+
+    if config.option.sort_tests:
+        items.sort(key=lambda item: execution_times.get(item.nodeid, 0), reverse=True)
 
     config.option.schedule = ScheduleType(config.option.schedule)
     if config.option.schedule != ScheduleType.Default:
@@ -88,7 +97,7 @@ def pytest_collection_modifyitems(
             schedule = scheduler.create_schedule()
             if config.option.cache_schedule:
                 for data in schedule:
-                    config.cache.set(f"splits/{data.id}", data.to_dict())
+                    config.cache.set(f"schedule/{data.id}", data.to_dict())
             if config.option.dist == "loadgroup":
                 assign_xdist_workers(items, schedule)
 
