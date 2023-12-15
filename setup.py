@@ -1,9 +1,7 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-import os
 import codecs
-from setuptools import setup
+import os
+
+from setuptools import find_packages, setup
 
 
 def read(fname):
@@ -12,17 +10,17 @@ def read(fname):
 
 
 setup(
-    name="pytest-slowest-first",
-    version="0.1.2",
-    author="Alexey Klimkin",
-    author_email="klimkin@gmail.com",
-    maintainer="Alexey Klimkin",
-    maintainer_email="klimkin@gmail.com",
+    name="pytest-schedule",
+    version="0.1.3",
+    author="Cipher Tech Solutions, Inc",
+    author_email="opensource@ciphertechsolutions.com",
+    maintainer="Cipher Tech Solutions, Inc",
+    maintainer_email="opensource@ciphertechsolutions.com",
     license="MIT",
-    url="https://github.com/klimkin/pytest-slowest-first",
-    description="Sort tests by their last duration, slowest first",
+    url="https://github.com/ciphertechsolutions/pytest-schedule",
+    description="Sort tests by their previous execution time and partition them into roughly equal groups",
     long_description=read("README.rst"),
-    py_modules=["pytest_slowest_first"],
+    packages=find_packages(),
     python_requires=">=3.8",
     install_requires=["pytest>=7.0.0", "pytest-xdist>=3.1.0"],
     classifiers=[
@@ -34,6 +32,9 @@ setup(
         "Programming Language :: Python :: 3",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
+        "Programming Language :: Python :: 3.10",
+        "Programming Language :: Python :: 3.11",
+        "Programming Language :: Python :: 3.12",
         "Programming Language :: Python :: 3 :: Only",
         "Programming Language :: Python :: Implementation :: CPython",
         "Programming Language :: Python :: Implementation :: PyPy",
@@ -42,7 +43,7 @@ setup(
     ],
     entry_points={
         "pytest11": [
-            "slowest-first = pytest_slowest_first",
+            "schedule = pytest_schedule.hooks",
         ],
     },
 )
