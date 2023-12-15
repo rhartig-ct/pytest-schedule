@@ -31,7 +31,7 @@ Installation
 
 You can install "pytest-schedule" via `pip`_::
 
-    $ pip install git+https://github.com/rhartig-ct/pytest-schedule@initial-release
+    $ pip install git+https://github.com/ciphertechsolutions/pytest-schedule@initial-release
 
 
 Usage
