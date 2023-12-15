@@ -82,7 +82,7 @@ Issues
 If you encounter any problems, please `file an issue`_ along with a detailed description.
 
 .. _`MIT`: http://opensource.org/licenses/MIT
-.. _`file an issue`: https://github.com/klimkin/pytest-slowest-first/issues
+.. _`file an issue`: https://github.com/ciphertechsolutions/pytest-schedule/issues
 .. _`pytest`: https://github.com/pytest-dev/pytest
 .. _`pip`: https://pypi.org/project/pip/
 .. _`PyPI`: https://pypi.org/project
